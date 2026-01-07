@@ -23,21 +23,24 @@ jobs:
       - name: Build XCFrameworks (iOS + macOS arm64)
         run: ./build_ffmpeg_xcframework.sh
 
-      - name: Archive XCFrameworks
+      - name: Zip XCFrameworks (one zip per framework)
         run: |
-          tar -czf ffmpeg-xcframework-${{ github.ref_name }}.tar.gz -C build xcframework
+          cd build/xcframework
+          for f in *.xcframework; do
+            zip -r "${f}.zip" "$f"
+          done
 
-      - name: Upload build artifact
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ffmpeg-xcframework-${{ github.ref_name }}
-          path: ffmpeg-xcframework-${{ github.ref_name }}.tar.gz
+          name: ffmpeg-xcframework-zips-${{ github.ref_name }}
+          path: build/xcframework/*.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: FFmpeg XCFramework ${{ github.ref_name }}
-          files: ffmpeg-xcframework-${{ github.ref_name }}.tar.gz
+          files: build/xcframework/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

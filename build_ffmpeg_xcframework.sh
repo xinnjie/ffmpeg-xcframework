@@ -32,8 +32,11 @@ configure_and_build() {
   local platform="$1" arch="$2"
   shift 2
 
-  local sdk cflags ldflags min_flag workdir prefix log extra_args
-  extra_args=("$@")
+  local sdk cflags ldflags min_flag workdir prefix log
+  local -a extra_args=()
+  if (($#)); then
+    extra_args+=("$@")
+  fi
 
   sdk="$(xcrun --sdk "$platform" --show-sdk-path)"
   if [[ ! -d "$sdk" ]]; then
@@ -69,22 +72,27 @@ configure_and_build() {
     extra_args+=("--disable-x86asm")
   fi
 
-  "$FFMPEG_SRC/configure" \
-    --arch="$arch" \
-    --target-os=darwin \
-    --cc="xcrun -sdk ${platform} clang" \
-    --sysroot="$sdk" \
-    --enable-cross-compile \
-    --enable-pic \
-    --enable-static \
-    --disable-shared \
-    --disable-programs \
-    --disable-doc \
-    --disable-debug \
-    --prefix="$prefix" \
-    --extra-cflags="$cflags" \
-    --extra-ldflags="$ldflags" \
-    "${extra_args[@]}" 2>&1 | tee "$log"
+  local -a cfg_args=(
+    --arch="$arch"
+    --target-os=darwin
+    --cc="xcrun -sdk ${platform} clang"
+    --sysroot="$sdk"
+    --enable-cross-compile
+    --enable-pic
+    --enable-static
+    --disable-shared
+    --disable-programs
+    --disable-doc
+    --disable-debug
+    --prefix="$prefix"
+    --extra-cflags="$cflags"
+    --extra-ldflags="$ldflags"
+  )
+  if ((${#extra_args[@]})); then
+    cfg_args+=("${extra_args[@]}")
+  fi
+
+  "$FFMPEG_SRC/configure" "${cfg_args[@]}" 2>&1 | tee "$log"
 
   make -j"$JOBS" 2>&1 | tee -a "$log"
   make install 2>&1 | tee -a "$log"

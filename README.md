@@ -31,7 +31,7 @@ Environment variables:
 - `build/logs`: configure/build logs
 
 ### CI release
-On git tags, `.github/workflows/release.yml` builds and uploads `ffmpeg-xcframework-<tag>.tar.gz` as a GitHub Release asset.
+On git tags, `.github/workflows/release.yml` builds and uploads as a GitHub Release asset.
 
 ### License
 - Scripts and workflow files in this repository are licensed under MIT (see `LICENSE`).
