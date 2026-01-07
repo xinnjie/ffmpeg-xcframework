@@ -32,3 +32,7 @@ Environment variables:
 
 ### CI release
 On git tags, `.github/workflows/release.yml` builds and uploads `ffmpeg-xcframework-<tag>.tar.gz` as a GitHub Release asset.
+
+### License
+- Scripts and workflow files in this repository are licensed under MIT (see `LICENSE`).
+- FFmpeg source and compiled artifacts follow FFmpeg’s own license terms; review the upstream FFmpeg license when redistributing binaries.
