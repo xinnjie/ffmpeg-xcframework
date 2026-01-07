@@ -1,0 +1,43 @@
+name: Build and Release XCFrameworks
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Make build script executable
+        run: chmod +x build_ffmpeg_xcframework.sh
+
+      - name: Build XCFrameworks (iOS + macOS arm64)
+        run: ./build_ffmpeg_xcframework.sh
+
+      - name: Archive XCFrameworks
+        run: |
+          tar -czf ffmpeg-xcframework-${{ github.ref_name }}.tar.gz -C build xcframework
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-xcframework-${{ github.ref_name }}
+          path: ffmpeg-xcframework-${{ github.ref_name }}.tar.gz
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: FFmpeg XCFramework ${{ github.ref_name }}
+          files: ffmpeg-xcframework-${{ github.ref_name }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
