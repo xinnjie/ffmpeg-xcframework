@@ -127,11 +127,24 @@ create_xcframeworks() {
   local lib
   for lib in "${FF_LIBS[@]}"; do
     local device_lib="$INSTALL_DIR/iphoneos-arm64/lib/lib${lib}.a"
-    local device_headers="$INSTALL_DIR/iphoneos-arm64/include"
     local sim_lib="$UNIVERSAL_DIR/iphonesimulator/lib/lib${lib}.a"
-    local sim_headers="$INSTALL_DIR/iphonesimulator-arm64/include"
     local mac_lib="$INSTALL_DIR/macosx-arm64/lib/lib${lib}.a"
-    local mac_headers="$INSTALL_DIR/macosx-arm64/include"
+
+    # Prepare isolated headers to avoid duplication across XCFrameworks
+    local iso_root="$BUILD_ROOT/isolated_headers/${lib}"
+    rm -rf "$iso_root"
+    mkdir -p "$iso_root/iphoneos-arm64" "$iso_root/iphonesimulator-arm64" "$iso_root/macosx-arm64"
+
+    local device_headers="$iso_root/iphoneos-arm64"
+    cp -R "$INSTALL_DIR/iphoneos-arm64/include/lib${lib}" "$device_headers/"
+
+    local sim_headers="$iso_root/iphonesimulator-arm64"
+    cp -R "$INSTALL_DIR/iphonesimulator-arm64/include/lib${lib}" "$sim_headers/"
+
+    local mac_headers="$iso_root/macosx-arm64"
+    if [[ -d "$INSTALL_DIR/macosx-arm64/include/lib${lib}" ]]; then
+      cp -R "$INSTALL_DIR/macosx-arm64/include/lib${lib}" "$mac_headers/"
+    fi
 
     if [[ ! -f "$device_lib" ]]; then
       echo "Missing device library: $device_lib" >&2
